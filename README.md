@@ -11,3 +11,6 @@ OctoAPI is a python library in order to easily access the OctoPrint API. You sim
 
 ## Documentation
 Coming soon
+
+## Annotation
+If you want to use the OctoPrint API at its full extent, the official documentation (http://docs.octoprint.org/en/master/api/general.html) is very helpful. You may also have to write your own script or modificate mine for your purposes.
