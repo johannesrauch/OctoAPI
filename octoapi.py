@@ -56,7 +56,7 @@ class OctoPrint_API(object):
 		
 	def _load_config(self):
 		home_dir = os.path.expanduser("~")
-		config_path = os.path.join(home_dir, ".octojoe.conf")
+		config_path = os.path.join(home_dir, ".octoapi.conf")
 		try:
 			config_file = open(config_path)
 			config = json.loads(config_file.read())
