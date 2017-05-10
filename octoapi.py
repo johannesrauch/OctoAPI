@@ -9,7 +9,7 @@
 #
 # to do:
 # - upload a file or create folder
-# - execute a registered system command
+# - execute a registered system command; response code = 204
 # ------------------------------------------------------------------------------------------------
 
 # ------------------------------------------------------------------------------------------------
@@ -166,7 +166,7 @@ def issue(**kwargs):
 	return op.post(**kwargs)
 	
 def post_bed(**kwargs):
-	kwargs.update({"url": "printer/bed"})
+	kwargs.update({"url": "printer/bed", "code": 204})
 	return issue(**kwargs)
 	
 def post_cancel():
@@ -174,7 +174,7 @@ def post_cancel():
 	return post_job(**kwargs)
 	
 def post_command(*args):
-	kwargs = {"commands": args, "url": "printer/command"}
+	kwargs = {"commands": args, "url": "printer/command", "code": 204}
 	return issue(**kwargs)
 	
 def post_connect(**kwargs):
@@ -182,11 +182,11 @@ def post_connect(**kwargs):
 	return post_connection(**kwargs)
 	
 def post_connection(**kwargs):
-	kwargs.update({"url": "connection"})
+	kwargs.update({"url": "connection", "code": 204})
 	return issue(**kwargs)
 	
 def post_copy(file, destination):
-	kwargs = {"command": "copy", "destination": destination, "url": "files/local/" + file, "code": 202}
+	kwargs = {"command": "copy", "destination": destination, "url": "files/local/" + file, "code": 201}
 	return issue(**kwargs)
 	
 def post_disconnect():
@@ -222,7 +222,7 @@ def post_init_sd():
 	return post_sd(**kwargs)
 	
 def post_job(**kwargs):
-	kwargs.update({"url": "job"})
+	kwargs.update({"url": "job", "code": 204})
 	return issue(**kwargs)
 	
 def post_jog(x = 0, y = 0, z = 0, absolute = False, speed = False):
@@ -230,7 +230,7 @@ def post_jog(x = 0, y = 0, z = 0, absolute = False, speed = False):
 	return post_printhead(**kwargs)
 	
 def post_move(file, destination):
-	kwargs = {"command": "move", "destination": destination, "url": "files/local/" + file}
+	kwargs = {"command": "move", "destination": destination, "url": "files/local/" + file, "code": 201}
 	return issue(**kwargs)
 	
 def post_offset_bed(offset):
@@ -249,7 +249,7 @@ def post_pause(action = "pause"):
 	return post_job(**kwargs)
 
 def post_print(file):
-	kwargs = {"command": "select", "print": True, "url": "files/local/" + file}
+	kwargs = {"command": "select", "print": True, "url": "files/local/" + file, "code": 204}
 	return issue(**kwargs)
 		
 def post_printerprofile(**kwargs):
@@ -257,7 +257,7 @@ def post_printerprofile(**kwargs):
 	return issue(**kwargs)
 	
 def post_printhead(**kwargs):
-	kwargs.update({"url": "printer/printhead"})
+	kwargs.update({"url": "printer/printhead", "code": 204})
 	return issue(**kwargs)
 	
 def post_refresh_sd():
@@ -273,11 +273,11 @@ def post_restart():
 	return post_job(**kwargs)
 	
 def post_sd(**kwargs):
-	kwargs.update({"url": "printer/sd"})
+	kwargs.update({"url": "printer/sd", "code": 204})
 	return issue(**kwargs)
 	
 def post_select_file(file):
-	kwargs = {"command": "select", "url": "files/local/" + file}
+	kwargs = {"command": "select", "url": "files/local/" + file, "code": 204}
 	return issue(**kwargs)
 	
 def post_select_tool(tool):
@@ -309,7 +309,7 @@ def post_target_tool0(target):
 	return post_target_tools(targets = {"tool0": target})
 	
 def post_tool(**kwargs):
-	kwargs.update({"url": "printer/tool"})
+	kwargs.update({"url": "printer/tool", "code": 204})
 	return issue(**kwargs)
 	
 def retrieve(**kwargs):
