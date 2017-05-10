@@ -8,7 +8,8 @@
 # You are able to get printer, job or file informations or issue several commands to it. 
 #
 # to do:
-# upload a file or create folder
+# - upload a file or create folder
+# - execute a registered system command
 # ------------------------------------------------------------------------------------------------
 
 # ------------------------------------------------------------------------------------------------
@@ -42,11 +43,11 @@ class OctoPrint_API(object):
 		return self._config["OctoAPI_KEY"]
 		
 	@property
-	def session(self):
+	def session(self, content_type = "application/json"):
 		if not self._session:
 			self._session = requests.Session()
 			self._session.headers["X-Api-Key"] = self.key
-			self._session.headers["Content-Type"] = "application/json"
+			self._session.headers["Content-Type"] = content_type
 			self._session.keep_alive = False
 		return self._session
 
@@ -82,13 +83,15 @@ class OctoPrint_API(object):
 		return res
 			
 	def get(self, **kwargs):
+		code = kwargs["code"] if "code" in kwargs else 200
 		res = self.session.get(self.url + kwargs["url"], params = kwargs)
-		return self.check_response(res, 200, True)
+		return self.check_response(res, code, True)
 		
 	def post(self, **kwargs):
+		code = kwargs["code"] if "code" in kwargs else 200
 		payload = json.dumps(kwargs)
 		res = self.session.post(self.url + kwargs["url"], data = payload)
-		return self.check_response(res, 204)
+		return self.check_response(res, code)
 		
 # ------------------------------------------------------------------------------------------------
 # functions
@@ -155,45 +158,158 @@ def get_version_dict():
 	kwargs = {"url": "version"}
 	return retrieve(**kwargs)
 	
+def is_printing():
+	return get_printer_dict()["state"]["flags"]["printing"]
+	
 def issue(**kwargs):
 	op = OctoPrint_API()
 	return op.post(**kwargs)
 	
-def post_cancel():
-	kwargs = {"command": "cancel", "url": "job"}
+def post_bed(**kwargs):
+	kwargs.update({"url": "printer/bed"})
 	return issue(**kwargs)
 	
-def post_connect(port = None, baudrate = None, printerProfile = None, save = False, autoconnect = True):
-	kwargs = {"command": "connect", "save": save, "autoconnect": autoconnect, "url": "connection"}
-	if port:
-		kwargs["port"] = port
-	if baudrate:
-		kwargs["baudrate"] = baudrate
-	if printerProfile:
-		kwargs["printerProfile"] = printerProfile
+def post_cancel():
+	kwargs = {"command": "cancel"}
+	return post_job(**kwargs)
+	
+def post_command(*args):
+	kwargs = {"commands": args, "url": "printer/command"}
+	return issue(**kwargs)
+	
+def post_connect(**kwargs):
+	kwargs.update({"command": "connect"})
+	return post_connection(**kwargs)
+	
+def post_connection(**kwargs):
+	kwargs.update({"url": "connection"})
 	return issue(**kwargs)
 	
 def post_copy(file, destination):
-	kwargs = {"command": "copy", "destination": destination, "url": "files/local" + file}
+	kwargs = {"command": "copy", "destination": destination, "url": "files/local/" + file, "code": 202}
 	return issue(**kwargs)
 	
 def post_disconnect():
-	kwargs = {"command": "disconnect", "url": "connection"}
-	return issue(**kwargs)
+	kwargs = {"command": "disconnect"}
+	return post_connection(**kwargs)
+	
+def post_extrude(amount):
+	kwargs = {"command": "extrude", "amount": amount}
+	return post_tool(**kwargs)
 	
 def post_fake_ack():
-	kwargs = {"command": "fake_ack", "url": "connection"}
+	kwargs = {"command": "fake_ack"}
+	return post_connection(**kwargs)
+	
+def post_feedrate(factor):
+	factor = 50 if factor < 50 else factor
+	factor = 200 if factor > 200 else factor
+	kwargs = {"command": "feedrate", "factor": factor}
+	return post_printhead(**kwargs)
+	
+def post_flowrate(factor):
+	factor = 75 if factor < 75 else factor
+	factor = 125 if factor > 125 else factor
+	kwargs = {"command": "flowrate", "factor": factor}
+	return post_tool(**kwargs)
 	
 def post_home(*args):
-	kwargs = {"axes": args, "command": "home", "url": "printer/printhead"}
-	return issue(**kwargs)
-
-def post_print(file):
-	kwargs = {"command": "select", "print": True, "url": "files/local" + file}
+	kwargs = {"command": "home", "axes": args}
+	return post_printhead(**kwargs)
+	
+def post_init_sd():
+	kwargs = {"command": "init"}
+	return post_sd(**kwargs)
+	
+def post_job(**kwargs):
+	kwargs.update({"url": "job"})
 	return issue(**kwargs)
 	
-def post_select(file):
-	kwargsargs = {"command": "select", "url": "files/local" + file}
+def post_jog(x = 0, y = 0, z = 0, absolute = False, speed = False):
+	kwargs = {"command": "jog", "x": x, "y": y, "z": z, "absolute": absolute, "speed": speed}
+	return post_printhead(**kwargs)
+	
+def post_move(file, destination):
+	kwargs = {"command": "move", "destination": destination, "url": "files/local/" + file}
+	return issue(**kwargs)
+	
+def post_offset_bed(offset):
+	kwargs = {"command": "offset", "offset": offset}
+	return post_bed(**kwargs)
+	
+def post_offset_tools(**kwargs):
+	kwargs.update({"command": "offset"})
+	return post_tool(**kwargs)
+	
+def post_offset_tool0(offset):
+	return post_offset_tools(offsets = {"tool0": offset})
+
+def post_pause(action = "pause"):
+	kwargs = {"command": "pause", "action": action}
+	return post_job(**kwargs)
+
+def post_print(file):
+	kwargs = {"command": "select", "print": True, "url": "files/local/" + file}
+	return issue(**kwargs)
+		
+def post_printerprofile(**kwargs):
+	kwargs.update({"url": "printerprofiles"})
+	return issue(**kwargs)
+	
+def post_printhead(**kwargs):
+	kwargs.update({"url": "printer/printhead"})
+	return issue(**kwargs)
+	
+def post_refresh_sd():
+	kwargs = {"command": "refresh"}
+	return post_sd(**kwargs)
+	
+def post_release_sd():
+	kwargs = {"command": "release"}
+	return post_sd(**kwargs)
+	
+def post_restart():
+	kwargs = {"command": "restart"}
+	return post_job(**kwargs)
+	
+def post_sd(**kwargs):
+	kwargs.update({"url": "printer/sd"})
+	return issue(**kwargs)
+	
+def post_select_file(file):
+	kwargs = {"command": "select", "url": "files/local/" + file}
+	return issue(**kwargs)
+	
+def post_select_tool(tool):
+	kwargs = {"command": "select", "tool": tool}
+	return post_tool(**kwargs)
+	
+def post_settings(**kwargs):
+	kwargs.update({"url": "settings"})
+	return issue(**kwargs)
+	
+def post_start():
+	kwargs = {"command": "start"}
+	return post_job(**kwargs)
+	
+def post_system():
+	pass
+	
+def post_target_bed(target):
+	kwargs = {"command": "target", "target": target}
+	return post_bed(**kwargs)
+	
+def post_target_tools(**kwargs):
+	kwargs.update({"command": "target"})
+	return post_tool(**kwargs)
+	
+def post_target_tool0(target):
+	target = 0 if target < 0 else target
+	target = 220 if target > 220 else target
+	return post_target_tools(targets = {"tool0": target})
+	
+def post_tool(**kwargs):
+	kwargs.update({"url": "printer/tool"})
 	return issue(**kwargs)
 	
 def retrieve(**kwargs):
@@ -212,7 +328,7 @@ def _main():
 	#print(get_printer_dict())
 	#print(get_printTime())
 	#print(get_printTimeLeft())
-	print(get_users_dict())
+	#print(get_users_dict())
 	#print(get_version_dict())
 	#print(post_cancel())
 	#print(post_home("x", "y"))
