@@ -63,7 +63,7 @@ class OctoPrint_API(object):
 			config = json.loads(config_file.read())
 			config_file.close()
 			return config
-		except FileNotFoundError:
+		except IOError:
 			logging.warning("Found no config!")
 		return {}
 			
@@ -72,7 +72,7 @@ class OctoPrint_API(object):
 		if code != res.status_code:
 			logging.warning("status_code:\t{}".format(res.status_code))
 			logging.warning("text:\t\t{}".format(res.text))
-			return None
+			return res
 		# transform response to dict
 		if transform:
 			try:
@@ -276,8 +276,8 @@ def post_sd(**kwargs):
 	kwargs.update({"url": "printer/sd", "code": 204})
 	return issue(**kwargs)
 	
-def post_select_file(file):
-	kwargs = {"command": "select", "url": "files/local/" + file, "code": 204}
+def post_select_file(file, start_print = False):
+	kwargs = {"command": "select", "print": start_print, "url": "files/local/" + file, "code": 204}
 	return issue(**kwargs)
 	
 def post_select_tool(tool):
