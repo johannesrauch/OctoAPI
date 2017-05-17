@@ -207,6 +207,15 @@ def post_connect(**kwargs):
 	kwargs.update({"command": "connect"})
 	return post_connection(**kwargs)
 	
+def post_connect(port=None, baudrate=None, printerProfile=None, save=None, autoconnect=None):
+	kwargs = {"command": "connect"}
+	if port: kwargs["port"] = port
+	if baudrate: kwargs["baudrate"] = baudrate
+	if printerProfile: kwargs["printerProfile"] = printerProfile
+	if save: kwargs["save"] = save
+	if autoconnect: kwargs["autoconnect"] = autoconnect
+	return post_connection(**kwargs)
+	
 def post_connection(**kwargs):
 	kwargs.update({"url": "connection", "code": 204})
 	return issue(**kwargs)
@@ -251,7 +260,11 @@ def post_job(**kwargs):
 	kwargs.update({"url": "job", "code": 204})
 	return issue(**kwargs)
 	
-def post_jog(x = 0, y = 0, z = 0, absolute = False, speed = False):
+def post_jog(**kwargs):
+	kwargs.update({"command": "jog"})
+	return post_printhead(**kwargs)
+	
+def post_jog(x=0, y=0, z=0, absolute=False, speed=False):
 	kwargs = {"command": "jog", "x": x, "y": y, "z": z, "absolute": absolute, "speed": speed}
 	return post_printhead(**kwargs)
 	
