@@ -63,7 +63,7 @@ class OctoPrint_API(object):
 			config = json.loads(config_file.read())
 			config_file.close()
 			return config
-		except FileNotFoundError:
+		except IOError:
 			logging.warning("Found no config!")
 		return {}
 			
