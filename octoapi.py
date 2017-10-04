@@ -67,12 +67,12 @@ class OctoPrint_API(object):
 			logging.warning("Found no config!")
 		return {}
 			
-	def check_response(self, res, code, transform = False):
+	def check_response(self, res, code, transform=False):
 		# check code
 		if code != res.status_code:
 			logging.warning("status_code:\t{}".format(res.status_code))
 			logging.warning("text:\t\t{}".format(res.text))
-			return None
+			return res
 		# transform response to dict
 		if transform:
 			try:
@@ -96,32 +96,6 @@ class OctoPrint_API(object):
 # ------------------------------------------------------------------------------------------------
 # functions
 # ------------------------------------------------------------------------------------------------
-def get_operational_value():
-    return get_printer_dict()["state"]["flags"]["operational"]
-	
-def get_paused_value():
-    return get_printer_dict()["state"]["flags"]["paused"]
-	
-def get_printing_value():
-    return is_printing()
-
-def get_actual_hotend_temp():
-    return get_printer_dict()["temperature"]["tool0"]["actual"]
-
-def get_target_hotend_temp():
-    return get_printer_dict()["temperature"]["tool0"]["target"]
-	
-def get_actual_bed_temp():
-    return get_printer_dict()["temperature"]["bed"]["actual"]
-
-def get_target_bed_temp():
-    return get_printer_dict()["temperature"]["bed"]["target"]	
-	
-def actual_is_target_temp():
-    if (get_actual_hotend_temp() >= (get_target_hotend_temp()-10)) and (get_actual_bed_temp() >= (get_target_bed_temp()-10)):
-        return True
-    else:
-        return False    
 	
 def get_bed_dict():
 	kwargs = {"url": "printer/bed"}
@@ -315,8 +289,8 @@ def post_sd(**kwargs):
 	kwargs.update({"url": "printer/sd", "code": 204})
 	return issue(**kwargs)
 	
-def post_select_file(file):
-	kwargs = {"command": "select", "url": "files/local/" + file, "code": 204}
+def post_select_file(file, start_print=False):
+	kwargs = {"command": "select", "print": start_print, "url": "files/local/" + file, "code": 204}
 	return issue(**kwargs)
 	
 def post_select_tool(tool):
