@@ -43,7 +43,7 @@ class OctoPrint_API(object):
 		return self._config["OctoAPI_KEY"]
 		
 	@property
-	def session(self, content_type = "application/json"):
+	def session(self, content_type="application/json"):
 		if not self._session:
 			self._session = requests.Session()
 			self._session.headers["X-Api-Key"] = self.key
